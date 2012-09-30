@@ -1,0 +1,103 @@
+/*
+ * Unminified CSS Source
+ * This css file is not required for the plugin, because the styles
+ * are minified and hard-coded in plugin.js
+ *
+ */
+
+img::selection {
+  color: rgba(0, 0, 0, 0);
+}
+
+#ckimgrsz {
+  position: absolute;
+  width: 0;
+  height: 0;
+  cursor: default;
+}
+
+#ckimgrsz .preview {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  background-size: 100% 100%;
+  opacity: .65;
+}
+
+#ckimgrsz span {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: #fff;
+  border: 1px solid #000;
+}
+
+#ckimgrsz span:hover, #ckimgrsz span.active {
+  background: #000;
+}
+
+#ckimgrsz span.tl {
+  cursor: nw-resize;
+}
+
+#ckimgrsz span.tm {
+  cursor: n-resize;
+}
+
+#ckimgrsz span.tr {
+  cursor: ne-resize;
+}
+
+#ckimgrsz span.lm {
+  cursor: w-resize;
+}
+
+#ckimgrsz span.rm {
+  cursor: e-resize;
+}
+
+#ckimgrsz span.bl {
+  cursor: sw-resize;
+}
+
+#ckimgrsz span.bm {
+  cursor: s-resize;
+}
+
+#ckimgrsz span.br {
+  cursor: se-resize;
+}
+
+body.dragging-tl, body.dragging-tl * {
+  cursor: nw-resize !important;
+}
+
+body.dragging-tm, body.dragging-tm * {
+  cursor: n-resize !important;
+}
+
+body.dragging-tr, body.dragging-tr * {
+  cursor: ne-resize !important;
+}
+
+body.dragging-lm, body.dragging-lm * {
+  cursor: w-resize !important;
+}
+
+body.dragging-rm, body.dragging-rm * {
+  cursor: e-resize !important;
+}
+
+body.dragging-bl, body.dragging-bl * {
+  cursor: sw-resize !important;
+}
+
+body.dragging-bm, body.dragging-bm * {
+  cursor: s-resize !important;
+}
+
+body.dragging-br, body.dragging-br * {
+  cursor: se-resize !important;
+}
