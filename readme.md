@@ -16,4 +16,4 @@ browser is detected and it has been tested in most recent versions of Chrome and
 
 Please, if you notice any bugs, open an issue in the [issue tracker](ck-webkitdrag/issues).
 
-This plugin is licensed under the MIT license. See LICENSE for further details.
+This plugin is licensed under the MIT license. See [LICENSE](ck-webkitdrag/LICENSE) for further details.
