@@ -14,6 +14,6 @@ or Safari, install this plugin to get it back (with a few bonus features).
 I have implemented this feature in pure JavaScript with no external dependencies. It only activates if a Webkit
 browser is detected and it has been tested in most recent versions of Chrome and Safari on PC and Mac.
 
-Please, if you notice any bugs, open an issue in the [issue tracker](/sstur/ck-webkitdrag/issues).
+Please, if you notice any bugs, open an issue in the [issue tracker](ck-webkitdrag/issues).
 
-Feel free to use this in commercial or non-comercial projects and fork and modify it at will.
+This plugin is licensed under the MIT license. See LICENSE for further details.
