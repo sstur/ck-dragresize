@@ -1,3 +1,6 @@
+*.asp
+*.php
+.htaccess
 .idea/
 _source/
 */node_modules/
