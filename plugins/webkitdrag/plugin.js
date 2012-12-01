@@ -17,8 +17,17 @@
    * Initializes the plugin
    */
   CKEDITOR.plugins.add(PLUGIN_NAME, {
+    onLoad: function() {
+      // This plugin only applies to Webkit.
+      if (!CKEDITOR.env.webkit) {
+        return;
+      }
+
+      // CSS is added in a compressed form
+      CKEDITOR.addCss('img::selection{color:rgba(0,0,0,0)}#ckimgrsz{position:absolute;width:0;height:0;cursor:default}#ckimgrsz .preview{position:absolute;top:0;left:0;width:0;height:0;background-size:100% 100%;opacity:.65;outline:1px dashed #000}#ckimgrsz span{position:absolute;width:5px;height:5px;background:#fff;border:1px solid #000}#ckimgrsz span:hover,#ckimgrsz span.active{background:#000}#ckimgrsz span.tl,#ckimgrsz span.br{cursor:nwse-resize}#ckimgrsz span.tm,#ckimgrsz span.bm{cursor:ns-resize}#ckimgrsz span.tr,#ckimgrsz span.bl{cursor:nesw-resize}#ckimgrsz span.lm,#ckimgrsz span.rm{cursor:ew-resize}body.dragging-tl,body.dragging-tl *,body.dragging-br,body.dragging-br *{cursor:nwse-resize!important}body.dragging-tm,body.dragging-tm *,body.dragging-bm,body.dragging-bm *{cursor:ns-resize!important}body.dragging-tr,body.dragging-tr *,body.dragging-bl,body.dragging-bl *{cursor:nesw-resize!important}body.dragging-lm,body.dragging-lm *,body.dragging-rm,body.dragging-rm *{cursor:ew-resize!important}');
+    },
     init: function(editor) {
-      //this plugin only applies to Webkit
+      // This plugin only applies to Webkit
       if (!CKEDITOR.env.webkit) {
         return;
       }
@@ -32,8 +41,6 @@
   function init(editor) {
     var window = editor.window.$, document = editor.document.$, body = document.body;
     var snapToSize = (typeof IMAGE_SNAP_TO_SIZE == 'undefined') ? null : IMAGE_SNAP_TO_SIZE;
-
-    addStyle(document, 'img::selection{color:rgba(0,0,0,0);}#ckimgrsz{position:absolute;width:0;height:0;cursor:default;}#ckimgrsz .preview{position:absolute;top:0;left:0;width:0;height:0;background-size:100% 100%;opacity:.65;}#ckimgrsz span{position:absolute;width:5px;height:5px;background:#fff;border:1px solid #000;}#ckimgrsz span:hover,#ckimgrsz span.active{background:#000;}#ckimgrsz span.tl{cursor:nw-resize;}#ckimgrsz span.tm{cursor:n-resize;}#ckimgrsz span.tr{cursor:ne-resize;}#ckimgrsz span.lm{cursor:w-resize;}#ckimgrsz span.rm{cursor:e-resize;}#ckimgrsz span.bl{cursor:sw-resize;}#ckimgrsz span.bm{cursor:s-resize;}#ckimgrsz span.br{cursor:se-resize;}body.dragging-tl,body.dragging-tl *{cursor:nw-resize!important;}body.dragging-tm,body.dragging-tm *{cursor:n-resize!important;}body.dragging-tr,body.dragging-tr *{cursor:ne-resize!important;}body.dragging-lm,body.dragging-lm *{cursor:w-resize!important;}body.dragging-rm,body.dragging-rm *{cursor:e-resize!important;}body.dragging-bl,body.dragging-bl *{cursor:sw-resize!important;}body.dragging-bm,body.dragging-bm *{cursor:s-resize!important;}body.dragging-br,body.dragging-br *{cursor:se-resize!important;}');
 
     function DragEvent() {
       this.events = {
@@ -139,7 +146,7 @@
         handles.br = document.createElement('span');
         handles.br.className = 'br';
         for (var n in handles) {
-          container.appendChild(handles[n]);
+          preview.appendChild(handles[n]);
         }
       },
       show: function() {
@@ -163,7 +170,6 @@
         var resizer = this;
         var drag = new DragEvent();
         drag.onStart = function() {
-          resizer.hideHandles();
           resizer.showPreview();
           resizer.isDragging = true;
           editor.getSelection().lock();
@@ -171,22 +177,28 @@
         drag.onDrag = function() {
           resizer.calculateSize(this);
           resizer.updatePreview();
+          resizer.updateHandles(resizer.previewBox);
         };
         drag.onRelease = function() {
           resizer.isDragging = false;
           resizer.hidePreview();
           resizer.hide();
+
           editor.getSelection().unlock();
-          //editor.focus() will trigger selection change which may start a whole new resize event
-          editor.focus();
+
+          // Save an undo snapshot before the image is permanently changed.
+          editor.fire('saveSnapshot');
         };
         drag.onComplete = function() {
           resizer.resizeComplete();
+
+          // Save another snapshot after the image is changed.
+          editor.fire('saveSnapshot');
         };
         drag.start(e);
       },
-      showHandles: function() {
-        var handles = this.handles, box = this.box;
+      updateHandles: function(box) {
+        var handles = this.handles;
         handles.tl.style.left = '-3px';
         handles.tl.style.top = '-3px';
         handles.tm.style.left = (Math.round(box.width / 2) - 3) + 'px';
@@ -203,10 +215,17 @@
         handles.bm.style.top = (box.height - 4) + 'px';
         handles.br.style.left = (box.width - 4) + 'px';
         handles.br.style.top = (box.height - 4) + 'px';
+      },
+      showHandles: function() {
+        var handles = this.handles;
+        this.updateHandles(this.box);
         for (var n in handles) {
           handles[n].style.display = 'block';
           handles[n].addEventListener('mousedown', this.events.initDrag, false);
         }
+        this.calculateSize();
+        this.updatePreview();
+        this.preview.style.display = 'block';
       },
       hideHandles: function() {
         var handles = this.handles;
@@ -214,12 +233,10 @@
           handles[n].removeEventListener('mousedown', this.events.initDrag, false);
           handles[n].style.display = 'none';
         }
+        this.preview.style.display = 'none';
       },
       showPreview: function() {
         this.preview.style.backgroundImage = 'url("' + this.el.src + '")';
-        this.calculateSize();
-        this.updatePreview();
-        this.preview.style.display = 'block';
       },
       updatePreview: function() {
         var box = this.previewBox;
@@ -229,9 +246,9 @@
         this.preview.style.height = box.height + 'px';
       },
       hidePreview: function() {
+        this.preview.style.backgroundImage = 'none';
         var box = getBoundingBox(window, this.preview);
         this.result = {width: box.width, height: box.height};
-        this.preview.style.display = 'none';
       },
       calculateSize: function(data) {
         var box = this.previewBox = {top: 0, left: 0, width: this.box.width, height: this.box.height};
@@ -288,19 +305,46 @@
 
     editor.on('selectionChange', function(evt) {
       var data = evt.data;
-      //if an element is selected and that element is an IMG
-      if (data.selection.getType() != CKEDITOR.SELECTION_NONE && data.element.is('img')) {
-        new Resizer(data.element.$);
+
+      // If an element is selected and that element is an IMG.
+      if (data.selection.getType() != CKEDITOR.SELECTION_NONE && data.selection.getStartElement().is('img')) {
+        // And we're not right or middle clicking on the image.
+        if (!window.event || !window.event.button || window.event.button === 0) {
+          new Resizer(data.selection.getStartElement().$);
+        }
       } else {
         Resizer.hide();
       }
+    });
+    editor.on('beforeUndoImage', function() {
+      // Remove the handles before undo images are saved.
+      Resizer.hide();
+    });
+    editor.on('afterUndoImage', function() {
+      // Restore the handles after undo images are saved.
+      editor.forceNextSelectionCheck();
+      editor.selectionChange();
     });
     editor.on('beforeModeUnload', function self() {
       editor.removeListener('beforeModeUnload', self);
       Resizer.hide();
     });
-  }
 
+    // Check resizes to the window and update the selection.
+    var resizeTimeout = false;
+    editor.window.on('resize', resizeHandler);
+    function resizeHandler() {
+      if (!resizeTimeout) {
+        setTimeout(function() {
+          editor.forceNextSelectionCheck();
+          editor.selectionChange();
+          resizeTimeout = false;
+        }, 10);
+        resizeTimeout = true;
+      }
+    }
+
+  }
 
   //helper functions
   function toArray(obj) {
@@ -329,12 +373,4 @@
       height: rect.height
     };
   }
-
-  function addStyle(document, css) {
-    var head = document.getElementsByTagName('head')[0];
-    var style = document.createElement('style');
-    style.appendChild(document.createTextNode(css));
-    head.appendChild(style);
-  }
-
 })();

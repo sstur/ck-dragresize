@@ -24,6 +24,7 @@ img::selection {
   height: 0;
   background-size: 100% 100%;
   opacity: .65;
+  outline: 1px dashed black;
 }
 
 #ckimgrsz span {
@@ -38,66 +39,42 @@ img::selection {
   background: #000;
 }
 
-#ckimgrsz span.tl {
-  cursor: nw-resize;
-}
-
-#ckimgrsz span.tm {
-  cursor: n-resize;
-}
-
-#ckimgrsz span.tr {
-  cursor: ne-resize;
-}
-
-#ckimgrsz span.lm {
-  cursor: w-resize;
-}
-
-#ckimgrsz span.rm {
-  cursor: e-resize;
-}
-
-#ckimgrsz span.bl {
-  cursor: sw-resize;
-}
-
-#ckimgrsz span.bm {
-  cursor: s-resize;
-}
-
+#ckimgrsz span.tl,
 #ckimgrsz span.br {
-  cursor: se-resize;
+  cursor: nwse-resize;
 }
 
-body.dragging-tl, body.dragging-tl * {
-  cursor: nw-resize !important;
+#ckimgrsz span.tm,
+#ckimgrsz span.bm {
+  cursor: ns-resize;
 }
 
-body.dragging-tm, body.dragging-tm * {
-  cursor: n-resize !important;
+#ckimgrsz span.tr,
+#ckimgrsz span.bl {
+  cursor: nesw-resize;
 }
 
-body.dragging-tr, body.dragging-tr * {
-  cursor: ne-resize !important;
+#ckimgrsz span.lm,
+#ckimgrsz span.rm {
+  cursor: ew-resize;
 }
 
-body.dragging-lm, body.dragging-lm * {
-  cursor: w-resize !important;
-}
-
-body.dragging-rm, body.dragging-rm * {
-  cursor: e-resize !important;
-}
-
-body.dragging-bl, body.dragging-bl * {
-  cursor: sw-resize !important;
-}
-
-body.dragging-bm, body.dragging-bm * {
-  cursor: s-resize !important;
-}
-
+body.dragging-tl, body.dragging-tl *,
 body.dragging-br, body.dragging-br * {
-  cursor: se-resize !important;
+  cursor: nwse-resize !important;
+}
+
+body.dragging-tm, body.dragging-tm *,
+body.dragging-bm, body.dragging-bm * {
+  cursor: ns-resize !important;
+}
+
+body.dragging-tr, body.dragging-tr *,
+body.dragging-bl, body.dragging-bl * {
+  cursor: nesw-resize !important;
+}
+
+body.dragging-lm, body.dragging-lm *,
+body.dragging-rm, body.dragging-rm * {
+  cursor: ew-resize !important;
 }
