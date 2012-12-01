@@ -24,7 +24,7 @@
       }
 
       // CSS is added in a compressed form
-      CKEDITOR.addCss('img::selection{color:rgba(0,0,0,0)}#ckimgrsz{position:absolute;width:0;height:0;cursor:default}#ckimgrsz .preview{position:absolute;top:0;left:0;width:0;height:0;background-size:100% 100%;opacity:.65;outline:1px dashed #000}#ckimgrsz span{position:absolute;width:5px;height:5px;background:#fff;border:1px solid #000}#ckimgrsz span:hover,#ckimgrsz span.active{background:#000}#ckimgrsz span.tl,#ckimgrsz span.br{cursor:nwse-resize}#ckimgrsz span.tm,#ckimgrsz span.bm{cursor:ns-resize}#ckimgrsz span.tr,#ckimgrsz span.bl{cursor:nesw-resize}#ckimgrsz span.lm,#ckimgrsz span.rm{cursor:ew-resize}body.dragging-tl,body.dragging-tl *,body.dragging-br,body.dragging-br *{cursor:nwse-resize!important}body.dragging-tm,body.dragging-tm *,body.dragging-bm,body.dragging-bm *{cursor:ns-resize!important}body.dragging-tr,body.dragging-tr *,body.dragging-bl,body.dragging-bl *{cursor:nesw-resize!important}body.dragging-lm,body.dragging-lm *,body.dragging-rm,body.dragging-rm *{cursor:ew-resize!important}');
+      CKEDITOR.addCss('img::selection{color:rgba(0,0,0,0)}img.cke-resize {outline: 1px dashed #000}#ckimgrsz{position:absolute;width:0;height:0;cursor:default}#ckimgrsz .preview{position:absolute;top:0;left:0;width:0;height:0;background-size:100% 100%;opacity:.65;outline:1px dashed #000}#ckimgrsz span{position:absolute;width:5px;height:5px;background:#fff;border:1px solid #000}#ckimgrsz span:hover,#ckimgrsz span.active{background:#000}#ckimgrsz span.tl,#ckimgrsz span.br{cursor:nwse-resize}#ckimgrsz span.tm,#ckimgrsz span.bm{cursor:ns-resize}#ckimgrsz span.tr,#ckimgrsz span.bl{cursor:nesw-resize}#ckimgrsz span.lm,#ckimgrsz span.rm{cursor:ew-resize}body.dragging-tl,body.dragging-tl *,body.dragging-br,body.dragging-br *{cursor:nwse-resize!important}body.dragging-tm,body.dragging-tm *,body.dragging-bm,body.dragging-bm *{cursor:ns-resize!important}body.dragging-tr,body.dragging-tr *,body.dragging-bl,body.dragging-bl *{cursor:nesw-resize!important}body.dragging-lm,body.dragging-lm *,body.dragging-rm,body.dragging-rm *{cursor:ew-resize!important}');
     },
     init: function(editor) {
       // This plugin only applies to Webkit
@@ -59,13 +59,14 @@
         e.preventDefault();
         e.stopPropagation();
         this.target = e.target;
+        this.attr = e.target.className;
         this.startPos = {x: e.clientX, y: e.clientY};
         this.update(e);
         var events = this.events;
         document.addEventListener('mousemove', events.mousemove, false);
         document.addEventListener('keydown', events.keydown, false);
         document.addEventListener('mouseup', events.mouseup, false);
-        body.className += ' dragging-' + this.attr
+        body.className += ' dragging-' + this.attr;
         this.onStart && this.onStart();
       },
       update: function(e) {
@@ -146,7 +147,7 @@
         handles.br = document.createElement('span');
         handles.br.className = 'br';
         for (var n in handles) {
-          preview.appendChild(handles[n]);
+          container.appendChild(handles[n]);
         }
       },
       show: function() {
@@ -223,9 +224,7 @@
           handles[n].style.display = 'block';
           handles[n].addEventListener('mousedown', this.events.initDrag, false);
         }
-        this.calculateSize();
-        this.updatePreview();
-        this.preview.style.display = 'block';
+        this.el.className += ' cke-resize';
       },
       hideHandles: function() {
         var handles = this.handles;
@@ -233,10 +232,19 @@
           handles[n].removeEventListener('mousedown', this.events.initDrag, false);
           handles[n].style.display = 'none';
         }
-        this.preview.style.display = 'none';
+        this.el.className = this.el.className.replace(' cke-resize', '');
+        console.log(this.el.className);
       },
       showPreview: function() {
         this.preview.style.backgroundImage = 'url("' + this.el.src + '")';
+        this.preview.style.display = 'block';
+        // Move handles to the preview so they resize with it.
+        for (var n in this.handles) {
+          this.preview.appendChild(this.handles[n]);
+        }
+        this.calculateSize();
+        this.updatePreview();
+        this.preview.style.display = 'block';
       },
       updatePreview: function() {
         var box = this.previewBox;
@@ -246,9 +254,13 @@
         this.preview.style.height = box.height + 'px';
       },
       hidePreview: function() {
-        this.preview.style.backgroundImage = 'none';
         var box = getBoundingBox(window, this.preview);
         this.result = {width: box.width, height: box.height};
+        // Move handles back to the wrapping container.
+        for (var n in this.handles) {
+          this.container.appendChild(this.handles[n]);
+        }
+        this.preview.style.display = 'none';
       },
       calculateSize: function(data) {
         var box = this.previewBox = {top: 0, left: 0, width: this.box.width, height: this.box.height};

@@ -9,6 +9,10 @@ img::selection {
   color: rgba(0, 0, 0, 0);
 }
 
+img.cke-resize {
+  outline: 1px dashed #000;
+}
+
 #ckimgrsz {
   position: absolute;
   width: 0;
@@ -24,7 +28,7 @@ img::selection {
   height: 0;
   background-size: 100% 100%;
   opacity: .65;
-  outline: 1px dashed black;
+  outline: 1px dashed #000;
 }
 
 #ckimgrsz span {
