@@ -27,8 +27,8 @@
       CKEDITOR.addCss('img::selection{color:rgba(0,0,0,0)}img.cke-resize {outline: 1px dashed #000}#ckimgrsz{position:absolute;width:0;height:0;cursor:default}#ckimgrsz .preview{position:absolute;top:0;left:0;width:0;height:0;background-size:100% 100%;opacity:.65;outline:1px dashed #000}#ckimgrsz span{position:absolute;width:5px;height:5px;background:#fff;border:1px solid #000}#ckimgrsz span:hover,#ckimgrsz span.active{background:#000}#ckimgrsz span.tl,#ckimgrsz span.br{cursor:nwse-resize}#ckimgrsz span.tm,#ckimgrsz span.bm{cursor:ns-resize}#ckimgrsz span.tr,#ckimgrsz span.bl{cursor:nesw-resize}#ckimgrsz span.lm,#ckimgrsz span.rm{cursor:ew-resize}body.dragging-tl,body.dragging-tl *,body.dragging-br,body.dragging-br *{cursor:nwse-resize!important}body.dragging-tm,body.dragging-tm *,body.dragging-bm,body.dragging-bm *{cursor:ns-resize!important}body.dragging-tr,body.dragging-tr *,body.dragging-bl,body.dragging-bl *{cursor:nesw-resize!important}body.dragging-lm,body.dragging-lm *,body.dragging-rm,body.dragging-rm *{cursor:ew-resize!important}');
     },
     init: function(editor) {
-      // This plugin only applies to Webkit
-      if (!CKEDITOR.env.webkit) {
+      // This plugin only applies to Webkit and Opera
+      if (!CKEDITOR.env.webkit && !CKEDITOR.env.opera) {
         return;
       }
       //onDomReady handler
