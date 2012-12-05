@@ -343,19 +343,17 @@
     });
 
     // Check resizes to the window and update the selection.
-    var resizeTimeout = false;
-    editor.window.on('resize', resizeHandler);
+    var resizeTimeout;
+    editor.window.on('resize', function() {
+      // Cancel any resize waiting to happen
+      clearTimeout(resizeTimeout);
+      // Delay resize for 10ms
+      resizeTimeout = setTimeout(resizeHandler, 10);
+    });
     function resizeHandler() {
-      if (!resizeTimeout) {
-        setTimeout(function() {
-          editor.forceNextSelectionCheck();
-          editor.selectionChange();
-          resizeTimeout = false;
-        }, 10);
-        resizeTimeout = true;
-      }
+      editor.forceNextSelectionCheck();
+      editor.selectionChange();
     }
-
   }
 
   //helper functions
