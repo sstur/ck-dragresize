@@ -1,5 +1,5 @@
 ﻿/**
- * CKEditor plugin: Dragable image resizing for Webkit
+ * CKEditor plugin: Dragable image resizing
  * - Shows semi-transparent overlay while resizing
  * - Enforces Aspect Ratio (unless holding shift)
  * - Snap to size of other images in editor
@@ -9,7 +9,7 @@
 (function() {
   "use strict";
 
-  var PLUGIN_NAME = 'webkitdrag';
+  var PLUGIN_NAME = 'dragresize';
 
   var IMAGE_SNAP_TO_SIZE = 7;
 
@@ -18,8 +18,8 @@
    */
   CKEDITOR.plugins.add(PLUGIN_NAME, {
     onLoad: function() {
-      // This plugin only applies to Webkit
-      if (!CKEDITOR.env.webkit) {
+      // This plugin only applies to Webkit and Opera
+      if (!CKEDITOR.env.webkit && !CKEDITOR.env.opera) {
         return;
       }
 

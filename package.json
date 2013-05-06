@@ -1,20 +1,20 @@
 {
-  "name": "ck-webkitdrag",
-  "description": "CKEditor dragable image resizing for Webkit",
+  "name": "ck-dragresize",
+  "description": "CKEditor dragable image resizing",
   "author": "Simon Sturmer (https://github.com/sstur)",
   "contributors": [
     "Simon Sturmer (https://github.com/sstur)",
     "Nathan Haug (https://github.com/quicksketch)"
   ],
-  "version": "0.2.2",
-  "homepage": "https://github.com/sstur/ck-webkitdrag",
-  "bugs": "https://github.com/sstur/ck-webkitdrag/issues",
+  "version": "0.3.0",
+  "homepage": "https://github.com/sstur/ck-dragresize",
+  "bugs": "https://github.com/sstur/ck-dragresize/issues",
   "licenses": [{
     "type": "MIT",
-    "url": "https://raw.github.com/sstur/ck-webkitdrag/master/LICENSE"
+    "url": "https://raw.github.com/sstur/ck-dragresize/master/LICENSE"
   }],
   "repository": {
     "type": "git",
-    "url": "git://github.com/sstur/ck-webkitdrag.git"
+    "url": "git://github.com/sstur/ck-dragresize.git"
   }
 }
