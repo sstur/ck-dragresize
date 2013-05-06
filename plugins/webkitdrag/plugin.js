@@ -233,7 +233,6 @@
           handles[n].style.display = 'none';
         }
         this.el.className = this.el.className.replace(' cke-resize', '');
-        console.log(this.el.className);
       },
       showPreview: function() {
         this.preview.style.backgroundImage = 'url("' + this.el.src + '")';
