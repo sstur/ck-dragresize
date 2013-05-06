@@ -314,28 +314,30 @@
       this.instance && this.instance.hide();
     };
 
-    editor.on('selectionChange', function(evt) {
-      var data = evt.data;
-
-      // If an element is selected and that element is an IMG.
-      if (data.selection.getType() != CKEDITOR.SELECTION_NONE && data.selection.getStartElement().is('img')) {
-        // And we're not right or middle clicking on the image.
+    function selectionChange() {
+      var selection = editor.getSelection();
+      // If an element is selected and that element is an IMG
+      if (selection.getType() != CKEDITOR.SELECTION_NONE && selection.getStartElement().is('img')) {
+        // And we're not right or middle clicking on the image
         if (!window.event || !window.event.button || window.event.button === 0) {
-          new Resizer(data.selection.getStartElement().$);
+          new Resizer(selection.getStartElement().$);
         }
       } else {
         Resizer.hide();
       }
-    });
+    }
+
+    editor.on('selectionChange', selectionChange);
+
     editor.on('beforeUndoImage', function() {
       // Remove the handles before undo images are saved.
       Resizer.hide();
     });
     editor.on('afterUndoImage', function() {
       // Restore the handles after undo images are saved.
-      editor.forceNextSelectionCheck();
-      editor.selectionChange();
+      selectionChange();
     });
+
     editor.on('beforeModeUnload', function self() {
       editor.removeListener('beforeModeUnload', self);
       Resizer.hide();
