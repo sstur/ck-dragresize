@@ -18,7 +18,7 @@
    */
   CKEDITOR.plugins.add(PLUGIN_NAME, {
     onLoad: function() {
-      // This plugin only applies to Webkit.
+      // This plugin only applies to Webkit
       if (!CKEDITOR.env.webkit) {
         return;
       }
@@ -187,13 +187,13 @@
 
           editor.getSelection().unlock();
 
-          // Save an undo snapshot before the image is permanently changed.
+          // Save an undo snapshot before the image is permanently changed
           editor.fire('saveSnapshot');
         };
         drag.onComplete = function() {
           resizer.resizeComplete();
 
-          // Save another snapshot after the image is changed.
+          // Save another snapshot after the image is changed
           editor.fire('saveSnapshot');
         };
         drag.start(e);
@@ -237,7 +237,7 @@
       showPreview: function() {
         this.preview.style.backgroundImage = 'url("' + this.el.src + '")';
         this.preview.style.display = 'block';
-        // Move handles to the preview so they resize with it.
+        // Move handles to the preview so they resize with it
         for (var n in this.handles) {
           this.preview.appendChild(this.handles[n]);
         }
@@ -255,7 +255,7 @@
       hidePreview: function() {
         var box = getBoundingBox(window, this.preview);
         this.result = {width: box.width, height: box.height};
-        // Move handles back to the wrapping container.
+        // Move handles back to the wrapping container
         for (var n in this.handles) {
           this.container.appendChild(this.handles[n]);
         }
@@ -330,11 +330,11 @@
     editor.on('selectionChange', selectionChange);
 
     editor.on('beforeUndoImage', function() {
-      // Remove the handles before undo images are saved.
+      // Remove the handles before undo images are saved
       Resizer.hide();
     });
     editor.on('afterUndoImage', function() {
-      // Restore the handles after undo images are saved.
+      // Restore the handles after undo images are saved
       selectionChange();
     });
 
@@ -343,7 +343,7 @@
       Resizer.hide();
     });
 
-    // Check resizes to the window and update the selection.
+    // Check resizes to the window and update the selection
     var resizeTimeout;
     editor.window.on('resize', function() {
       // Cancel any resize waiting to happen
