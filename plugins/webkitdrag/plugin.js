@@ -349,12 +349,8 @@
       // Cancel any resize waiting to happen
       clearTimeout(resizeTimeout);
       // Delay resize for 10ms
-      resizeTimeout = setTimeout(resizeHandler, 10);
+      resizeTimeout = setTimeout(selectionChange, 10);
     });
-    function resizeHandler() {
-      editor.forceNextSelectionCheck();
-      editor.selectionChange();
-    }
   }
 
   //helper functions
