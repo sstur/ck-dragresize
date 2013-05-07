@@ -1,9 +1,6 @@
 #CKEditor plugin: Dragable image resizing
 
-This plugin implements draggable image resizing, currently just for Webkit-based browsers (Chrome/Safari). The feature
-already exists in Firefox and Internet Explorer (9 and below) as a built-in browser capability but not in Webkit. So
-if you or your users are used to seeing the small drag-to-resize handles at the corner of images, but use Chrome or
-Safari, install this plugin to get it back (with a few bonus features).
+This plugin implements draggable image resizing, currently just for Webkit-based browsers (Chrome/Safari) and Opera. This feature already exists in Firefox and Internet Explorer as a built-in browser capability but not in the other browsers. So if you or your users are used to seeing the drag-to-resize handles at the corner of images, but use Chrome or Safari, install this plugin to get it back (with a few bonus features).
 
 ##Features:
  * Shows semi-transparent overlay while resizing
@@ -13,15 +10,16 @@ Safari, install this plugin to get it back (with a few bonus features).
  * Undo and Redo support
  * Image dragging and Right-click still work
 
-I have implemented this feature in pure JavaScript with no external dependencies. It only activates if a supported
-browser is detected (Webkit, possibly Opera). It has been tested in most recent versions of Chrome and Safari on PC
-and Mac.
+I have implemented this feature in pure JavaScript with no external dependencies. It only activates if a supported browser is detected (Webkit and Opera). It has been tested in most recent versions of Chrome and Safari on PC and Mac.
 
 ##Browser Support
  * Chrome and Safari are currently supported
- * Firefox has this feature built-in, so this plugin does not activate in FF
- * Opera support is not yet fully tested
- * Support for Internet Explorer 10 coming soon
+ * Opera support is reportedly working but not fully tested
+ * Firefox and IE have this feature built-in, so this plugin does not activate in those browsers
+
+##Planned Features / Coming Soon
+ * Use HTML5 Drag & Drop API
+ * Config option to use this plugin in Firefox and modern IE (disabling the built-in feature)
 
 ##Contributers:
   * [Simon Sturmer] (https://github.com/sstur)
