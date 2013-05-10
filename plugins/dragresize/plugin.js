@@ -97,11 +97,7 @@
           this.hide();
         }
         this.el = element;
-        if (snapToSize) {
-          this.otherImages = toArray(document.getElementsByTagName('img'));
-          this.otherImages.splice(this.otherImages.indexOf(element), 1);
-        }
-        var box = this.box = getBoundingBox(window, element);
+        var box = this.originalBox = getBoundingBox(window, element);
         positionElement(this.container, box.left, box.top);
         body.appendChild(this.container);
         this.showHandles();
@@ -119,25 +115,23 @@
         var details;
         var events = {
           dragstart: function(e) {
-            console.log('dragstart');
             details = new DragDetails(e);
-            console.log('dragstart', details);
             addClass(body, 'dragging-' + details.attr);
             resizer.showPreview();
             editor.getSelection().lock();
+            resizer.calculateOtherImageSizes();
           },
           drag: function(e) {
             details.update(e);
-            resizer.calculateSize(details);
+            resizer.calculateBox(details);
             resizer.updatePreview();
-            var box = resizer.previewBox;
+            var box = resizer.calculatedBox;
             resizer.updateHandles(box, box.left, box.top);
           },
           dragend: function(e) {
             removeClass(body, 'dragging-' + details.attr);
             resizer.hidePreview();
             resizer.hide();
-            console.log('dragend', resizer.result);
             editor.getSelection().unlock();
             // Save an undo snapshot before the image is permanently changed
             editor.fire('saveSnapshot');
@@ -151,6 +145,15 @@
           addEvents(el, events);
         });
         return events;
+      },
+      calculateOtherImageSizes: function() {
+        if (snapToSize) return;
+        var others = toArray(document.getElementsByTagName('img'));
+        others.splice(others.indexOf(this.el), 1);
+        for (var i = 0; i < others.length; i++) {
+          others[i] = getBoundingBox(window, others[i]);
+        }
+        this.otherImageSizes = others;
       },
       updateHandles: function(box, left, top) {
         left = left || 0;
@@ -167,7 +170,7 @@
       },
       showHandles: function() {
         var handles = this.handles;
-        this.updateHandles(this.box);
+        this.updateHandles(this.originalBox);
         forEach(handles, function(n, handle) {
           handle.style.display = 'block';
         });
@@ -184,66 +187,73 @@
       },
       showPreview: function() {
         this.preview.style.backgroundImage = 'url("' + this.el.src + '")';
-        this.calculateSize();
+        this.calculateBox();
         this.updatePreview();
         this.preview.style.display = 'block';
       },
       updatePreview: function() {
-        var box = this.previewBox;
+        var box = this.calculatedBox;
         positionElement(this.preview, box.left, box.top);
         resizeElement(this.preview, box.width, box.height);
       },
       hidePreview: function() {
-        var box = getBoundingBox(window, this.preview);
-        this.result = {width: box.width, height: box.height};
         this.preview.style.display = 'none';
       },
-      calculateSize: function(data) {
-        var box = this.previewBox = {top: 0, left: 0, width: this.box.width, height: this.box.height};
+      calculateBox: function(data) {
+        var lastCalculated = this.calculatedBox;
+        var original = this.originalBox;
+        var calculated = this.calculatedBox = {top: 0, left: 0, width: original.width, height: original.height};
         if (!data) return;
-        var attr = data.target.className;
+        var attr = data.attr;
         if (~attr.indexOf('r')) {
-          box.width = Math.max(32, this.box.width + data.delta.x);
+          calculated.width = Math.max(32, original.width + data.delta.x);
         }
         if (~attr.indexOf('b')) {
-          box.height = Math.max(32, this.box.height + data.delta.y);
+          calculated.height = Math.max(32, original.height + data.delta.y);
         }
         if (~attr.indexOf('l')) {
-          box.width = Math.max(32, this.box.width - data.delta.x);
+          calculated.width = Math.max(32, original.width - data.delta.x);
         }
         if (~attr.indexOf('t')) {
-          box.height = Math.max(32, this.box.height - data.delta.y);
+          calculated.height = Math.max(32, original.height - data.delta.y);
         }
         //if dragging corner, enforce aspect ratio (unless shift key is being held)
         if (attr.indexOf('m') < 0 && !data.keys.shift) {
-          var ratio = this.box.width / this.box.height;
-          if (box.width / box.height > ratio) {
-            box.height = Math.round(box.width / ratio);
+          var ratio = original.width / original.height;
+          if (calculated.width / calculated.height > ratio) {
+            calculated.height = Math.round(calculated.width / ratio);
           } else {
-            box.width = Math.round(box.height * ratio);
+            calculated.width = Math.round(calculated.height * ratio);
           }
         }
-        if (snapToSize) {
-          var others = this.otherImages;
+        var others = this.otherImageSizes;
+        if (others && others.length && snapToSize) {
           for (var i = 0; i < others.length; i++) {
-            var other = getBoundingBox(window, others[i]);
-            if (Math.abs(box.width - other.width) <= snapToSize && Math.abs(box.height - other.height) <= snapToSize) {
-              box.width = other.width;
-              box.height = other.height;
+            var other = others[i];
+            if (Math.abs(calculated.width - other.width) <= snapToSize && Math.abs(calculated.height - other.height) <= snapToSize) {
+              calculated.width = other.width;
+              calculated.height = other.height;
               break;
             }
           }
         }
         //recalculate left or top position
         if (~attr.indexOf('l')) {
-          box.left = this.box.width - box.width;
+          calculated.left = original.width - calculated.width;
         }
         if (~attr.indexOf('t')) {
-          box.top = this.box.height - box.height;
+          calculated.top = original.height - calculated.height;
+        }
+        if (Math.abs(lastCalculated.width - calculated.width) > Math.min(lastCalculated.width, calculated.width)) {
+          //we have jumped more than double in size; abort
+          this.calculatedBox = lastCalculated;
         }
       },
       resizeComplete: function() {
-        resizeElement(this.el, this.result.width, this.result.height);
+        var result = this.calculatedBox || {};
+        if (result.width > 0 && result.height > 0) {
+          resizeElement(this.el, result.width, result.height);
+        }
       }
     };
 
@@ -350,7 +360,6 @@
 
   function getBoundingBox(window, el) {
     var rect = el.getBoundingClientRect();
-    console.log(rect);
     return {
       left: rect.left + window.pageXOffset,
       top: rect.top + window.pageYOffset,
