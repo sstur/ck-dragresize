@@ -42,40 +42,31 @@
     var window = editor.window.$, document = editor.document.$, body = document.body;
     var snapToSize = (typeof IMAGE_SNAP_TO_SIZE == 'undefined') ? null : IMAGE_SNAP_TO_SIZE;
 
+    // This will represent the singleton instance of Resizer. There should
+    //  be at most one instance per editor content dom
+    var resizer;
+
     function DragDetails(e) {
       this.target = e.target;
       this.attr = e.target.className;
-      this.startPos = {x: e.clientX, y: e.clientY};
+      this.startPos = {x: e.screenX, y: e.screenY};
       this.update(e);
     }
 
     DragDetails.prototype = {
       update: function(e) {
-        this.currentPos = {x: e.clientX, y: e.clientY};
-        this.delta = {x: e.clientX - this.startPos.x, y: e.clientY - this.startPos.y};
+        //this.currentPos = {x: e.screenX, y: e.screenY};
+        this.delta = {x: e.screenX - this.startPos.x, y: e.screenY - this.startPos.y};
         this.keys = {shift: e.shiftKey, ctrl: e.ctrlKey, alt: e.altKey};
       }
     };
 
-
-    function Resizer(element) {
-      this.el = element;
+    function Resizer() {
       this.init();
-      this.show();
     }
 
     Resizer.prototype = {
       init: function() {
-        var old = Resizer.instance;
-        Resizer.instance = this;
-        if (old) {
-          //reuse existing dom elements
-          old.hide();
-          this.container = old.container;
-          this.preview = old.preview;
-          this.handles = old.handles;
-          return;
-        }
         var container = this.container = document.createElement('div');
         container.id = 'ckimgrsz';
         var preview = this.preview = document.createElement('div');
@@ -91,64 +82,62 @@
           bm: this.createSpan('bm'),
           br: this.createSpan('br')
         };
-        for (var n in handles) {
-          container.appendChild(handles[n]);
-        }
+        forEach(handles, function(n, handle) {
+          container.appendChild(handle);
+        });
       },
       createSpan: function(className) {
         var el = document.createElement('span');
         el.className = className;
         return el;
       },
-      show: function() {
+      show: function(element) {
+        if (this.isShown) {
+          //avoid showing without hiding first
+          this.hide();
+        }
+        this.el = element;
         if (snapToSize) {
           this.otherImages = toArray(document.getElementsByTagName('img'));
-          this.otherImages.splice(this.otherImages.indexOf(this.el), 1);
+          this.otherImages.splice(this.otherImages.indexOf(element), 1);
         }
-        var box = this.box = getBoundingBox(window, this.el);
+        var box = this.box = getBoundingBox(window, element);
         positionElement(this.container, box.left, box.top);
         body.appendChild(this.container);
         this.showHandles();
+        this.isShown = true;
       },
       hide: function() {
-        if (this.container.parentNode) {
+        if (this.isShown) {
           this.hideHandles();
           this.container.parentNode.removeChild(this.container);
+          this.isShown = false;
         }
       },
-      makeDraggable: function(el) {
+      makeDraggable: function(elements) {
         var resizer = this;
-        el.setAttribute('draggable', 'true');
         var details;
         var events = {
           dragstart: function(e) {
-            var el = e.target;
+            console.log('dragstart');
             details = new DragDetails(e);
-            console.log(details);
-            body.className += ' dragging-' + details.attr;
-            //document.addEventListener('keydown', events.keydown, false);
+            console.log('dragstart', details);
+            addClass(body, 'dragging-' + details.attr);
             resizer.showPreview();
             editor.getSelection().lock();
           },
-          //keydown: function() {
-          //  //escape key cancels dragging
-          //  if (e.keyCode == 27) {
-          //    events.dragend();
-          //  }
-          //},
           drag: function(e) {
-            console.log(details);
             details.update(e);
             resizer.calculateSize(details);
             resizer.updatePreview();
             var box = resizer.previewBox;
             resizer.updateHandles(box, box.left, box.top);
           },
-          dragend: function() {
-            body.className = body.className.replace('dragging-' + details.attr, '');
-            //document.removeEventListener('keydown', events.keydown, false);
+          dragend: function(e) {
+            removeClass(body, 'dragging-' + details.attr);
             resizer.hidePreview();
             resizer.hide();
+            console.log('dragend', resizer.result);
             editor.getSelection().unlock();
             // Save an undo snapshot before the image is permanently changed
             editor.fire('saveSnapshot');
@@ -157,7 +146,10 @@
             editor.fire('saveSnapshot');
           }
         };
-        addEvents(el, events);
+        forEach(elements, function(n, el) {
+          el.setAttribute('draggable', 'true');
+          addEvents(el, events);
+        });
         return events;
       },
       updateHandles: function(box, left, top) {
@@ -176,19 +168,19 @@
       showHandles: function() {
         var handles = this.handles;
         this.updateHandles(this.box);
-        for (var n in handles) {
-          handles[n].style.display = 'block';
-          this.dragEvents = this.makeDraggable(handles[n]);
-        }
-        this.el.className += ' cke-resize';
+        forEach(handles, function(n, handle) {
+          handle.style.display = 'block';
+        });
+        this.dragEvents = this.makeDraggable(handles);
+        addClass(this.el, 'cke-resize');
       },
       hideHandles: function() {
-        var handles = this.handles;
-        for (var n in handles) {
-          removeEvents(handles[n], this.dragEvents);
-          handles[n].style.display = 'none';
-        }
-        this.el.className = this.el.className.replace(' cke-resize', '');
+        var handles = this.handles, events = this.dragEvents;
+        forEach(handles, function(n, handle) {
+          removeEvents(handle, events);
+          handle.style.display = 'none';
+        });
+        removeClass(this.el, 'cke-resize');
       },
       showPreview: function() {
         this.preview.style.backgroundImage = 'url("' + this.el.src + '")';
@@ -254,9 +246,6 @@
         resizeElement(this.el, this.result.width, this.result.height);
       }
     };
-    Resizer.hide = function() {
-      this.instance && this.instance.hide();
-    };
 
     function selectionChange() {
       var selection = editor.getSelection();
@@ -264,10 +253,11 @@
       if (selection.getType() != CKEDITOR.SELECTION_NONE && selection.getStartElement().is('img')) {
         // And we're not right or middle clicking on the image
         if (!window.event || !window.event.button || window.event.button === 0) {
-          new Resizer(selection.getStartElement().$);
+          resizer || (resizer = new Resizer());
+          resizer.show(selection.getStartElement().$)
         }
       } else {
-        Resizer.hide();
+        resizer && resizer.hide();
       }
     }
 
@@ -275,7 +265,7 @@
 
     editor.on('beforeUndoImage', function() {
       // Remove the handles before undo images are saved
-      Resizer.hide();
+      resizer && resizer.hide();
     });
 
     editor.on('afterUndoImage', function() {
@@ -285,12 +275,12 @@
 
     editor.on('blur', function() {
       // Remove the handles when editor loses focus
-      Resizer.hide();
+      resizer && resizer.hide();
     });
 
     editor.on('beforeModeUnload', function self() {
       editor.removeListener('beforeModeUnload', self);
-      Resizer.hide();
+      resizer && resizer.hide();
     });
 
     // Update the selection when the browser window is resized
@@ -312,25 +302,40 @@
     return arr;
   }
 
-  function bind(fn, ctx) {
-    if (fn.bind) {
-      return fn.bind(ctx);
+  function forEach(obj, fn) {
+    var i, len, keys;
+    if (Array.isArray(obj)) {
+      len = obj.length;
+      for (i = 0; i < len; i++) fn(i, obj[i]);
+    } else {
+      keys = Object.keys(obj);
+      len = keys.length;
+      for (i = 0; i < len; i++) fn(keys[i], obj[keys[i]]);
     }
-    return function() {
-      fn.apply(ctx, arguments);
-    };
+  }
+
+  function addClass(el, cls) {
+    var className = el.className;
+    el.className = (className) ? className + ' ' + cls : cls;
+  }
+
+  function removeClass(el, cls) {
+    var classNames = el.className.trim().split(/\s+/);
+    var i = classNames.indexOf(cls);
+    if (i >= 0) classNames.splice(i, 1);
+    el.className = classNames.join(' ');
   }
 
   function addEvents(el, events) {
-    for (var n in events) {
-      el.addEventListener(n, events[n], false);
-    }
+    forEach(events, function(n, event) {
+      el.addEventListener(n, event, false);
+    });
   }
 
   function removeEvents(el, events) {
-    for (var n in events) {
-      el.removeEventListener(n, events[n], false);
-    }
+    forEach(events, function(n, event) {
+      el.removeEventListener(n, event, false);
+    });
   }
 
   function positionElement(el, left, top) {
@@ -345,6 +350,7 @@
 
   function getBoundingBox(window, el) {
     var rect = el.getBoundingClientRect();
+    console.log(rect);
     return {
       left: rect.left + window.pageXOffset,
       top: rect.top + window.pageYOffset,
