@@ -129,26 +129,24 @@
         var preview = this.preview = document.createElement('div');
         preview.className = 'preview';
         container.appendChild(preview);
-        var handles = this.handles = {};
-        handles.tl = document.createElement('span');
-        handles.tl.className = 'tl';
-        handles.tm = document.createElement('span');
-        handles.tm.className = 'tm';
-        handles.tr = document.createElement('span');
-        handles.tr.className = 'tr';
-        handles.lm = document.createElement('span');
-        handles.lm.className = 'lm';
-        handles.rm = document.createElement('span');
-        handles.rm.className = 'rm';
-        handles.bl = document.createElement('span');
-        handles.bl.className = 'bl';
-        handles.bm = document.createElement('span');
-        handles.bm.className = 'bm';
-        handles.br = document.createElement('span');
-        handles.br.className = 'br';
+        var handles = this.handles = {
+          tl: this.createSpan('tl'),
+          tm: this.createSpan('tm'),
+          tr: this.createSpan('tr'),
+          lm: this.createSpan('lm'),
+          rm: this.createSpan('rm'),
+          bl: this.createSpan('bl'),
+          bm: this.createSpan('bm'),
+          br: this.createSpan('br')
+        };
         for (var n in handles) {
           container.appendChild(handles[n]);
         }
+      },
+      createSpan: function(className) {
+        var el = document.createElement('span');
+        el.className = className;
+        return el;
       },
       show: function() {
         if (snapToSize) {
@@ -156,8 +154,7 @@
           this.otherImages.splice(this.otherImages.indexOf(this.el), 1);
         }
         var box = this.box = getBoundingBox(window, this.el);
-        this.container.style.left = box.left + 'px';
-        this.container.style.top = box.top + 'px';
+        positionElement(this.container, box.left, box.top);
         body.appendChild(this.container);
         this.showHandles();
       },
@@ -200,22 +197,14 @@
       },
       updateHandles: function(box) {
         var handles = this.handles;
-        handles.tl.style.left = '-3px';
-        handles.tl.style.top = '-3px';
-        handles.tm.style.left = (Math.round(box.width / 2) - 3) + 'px';
-        handles.tm.style.top = '-3px';
-        handles.tr.style.left = (box.width - 4) + 'px';
-        handles.tr.style.top = '-3px';
-        handles.lm.style.left = '-3px';
-        handles.lm.style.top = (Math.round(box.height / 2) - 3) + 'px';
-        handles.rm.style.left = (box.width - 4) + 'px';
-        handles.rm.style.top = (Math.round(box.height / 2) - 3) + 'px';
-        handles.bl.style.left = '-3px';
-        handles.bl.style.top = (box.height - 4) + 'px';
-        handles.bm.style.left = (Math.round(box.width / 2) - 3) + 'px';
-        handles.bm.style.top = (box.height - 4) + 'px';
-        handles.br.style.left = (box.width - 4) + 'px';
-        handles.br.style.top = (box.height - 4) + 'px';
+        positionElement(handles.tl, -3, -3);
+        positionElement(handles.tm, Math.round(box.width / 2) - 3, -3);
+        positionElement(handles.tr, box.width - 4, -3);
+        positionElement(handles.lm, -3, Math.round(box.height / 2) - 3);
+        positionElement(handles.rm, box.width - 4, Math.round(box.height / 2) - 3);
+        positionElement(handles.bl, -3, box.height - 4);
+        positionElement(handles.bm, Math.round(box.width / 2) - 3, box.height - 4);
+        positionElement(handles.br, box.width - 4, box.height - 4);
       },
       showHandles: function() {
         var handles = this.handles;
@@ -247,10 +236,8 @@
       },
       updatePreview: function() {
         var box = this.previewBox;
-        this.preview.style.top = box.top + 'px';
-        this.preview.style.left = box.left + 'px';
-        this.preview.style.width = box.width + 'px';
-        this.preview.style.height = box.height + 'px';
+        positionElement(this.preview, box.left, box.top);
+        resizeElement(this.preview, box.width, box.height);
       },
       hidePreview: function() {
         var box = getBoundingBox(window, this.preview);
@@ -306,8 +293,7 @@
         }
       },
       resizeComplete: function() {
-        this.el.style.width = this.result.width + 'px';
-        this.el.style.height = this.result.height + 'px';
+        resizeElement(this.el, this.result.width, this.result.height);
       }
     };
     Resizer.hide = function() {
@@ -369,6 +355,16 @@
     return function() {
       fn.apply(ctx, arguments);
     };
+  }
+
+  function positionElement(el, left, top) {
+    el.style.left = String(left) + 'px';
+    el.style.top = String(top) + 'px';
+  }
+
+  function resizeElement(el, width, height) {
+    el.style.width = String(width) + 'px';
+    el.style.height = String(height) + 'px';
   }
 
   function getBoundingBox(window, el) {
