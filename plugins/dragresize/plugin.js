@@ -228,7 +228,6 @@
       },
       showPreview: function() {
         this.preview.style.backgroundImage = 'url("' + this.el.src + '")';
-        this.preview.style.display = 'block';
         this.calculateSize();
         this.updatePreview();
         this.preview.style.display = 'block';
