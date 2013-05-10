@@ -175,7 +175,8 @@
         drag.onDrag = function() {
           resizer.calculateSize(this);
           resizer.updatePreview();
-          resizer.updateHandles(resizer.previewBox);
+          var box = resizer.previewBox;
+          resizer.updateHandles(box, box.left, box.top);
         };
         drag.onRelease = function() {
           resizer.isDragging = false;
@@ -195,16 +196,18 @@
         };
         drag.start(e);
       },
-      updateHandles: function(box) {
+      updateHandles: function(box, left, top) {
+        left = left || 0;
+        top = top || 0;
         var handles = this.handles;
-        positionElement(handles.tl, -3, -3);
-        positionElement(handles.tm, Math.round(box.width / 2) - 3, -3);
-        positionElement(handles.tr, box.width - 4, -3);
-        positionElement(handles.lm, -3, Math.round(box.height / 2) - 3);
-        positionElement(handles.rm, box.width - 4, Math.round(box.height / 2) - 3);
-        positionElement(handles.bl, -3, box.height - 4);
-        positionElement(handles.bm, Math.round(box.width / 2) - 3, box.height - 4);
-        positionElement(handles.br, box.width - 4, box.height - 4);
+        positionElement(handles.tl, -3 + left, -3 + top);
+        positionElement(handles.tm, Math.round(box.width / 2) - 3 + left, -3 + top);
+        positionElement(handles.tr, box.width - 4 + left, -3 + top);
+        positionElement(handles.lm, -3 + left, Math.round(box.height / 2) - 3 + top);
+        positionElement(handles.rm, box.width - 4 + left, Math.round(box.height / 2) - 3 + top);
+        positionElement(handles.bl, -3 + left, box.height - 4 + top);
+        positionElement(handles.bm, Math.round(box.width / 2) - 3 + left, box.height - 4 + top);
+        positionElement(handles.br, box.width - 4 + left, box.height - 4 + top);
       },
       showHandles: function() {
         var handles = this.handles;
@@ -226,10 +229,6 @@
       showPreview: function() {
         this.preview.style.backgroundImage = 'url("' + this.el.src + '")';
         this.preview.style.display = 'block';
-        // Move handles to the preview so they resize with it
-        for (var n in this.handles) {
-          this.preview.appendChild(this.handles[n]);
-        }
         this.calculateSize();
         this.updatePreview();
         this.preview.style.display = 'block';
@@ -242,10 +241,6 @@
       hidePreview: function() {
         var box = getBoundingBox(window, this.preview);
         this.result = {width: box.width, height: box.height};
-        // Move handles back to the wrapping container
-        for (var n in this.handles) {
-          this.container.appendChild(this.handles[n]);
-        }
         this.preview.style.display = 'none';
       },
       calculateSize: function(data) {
