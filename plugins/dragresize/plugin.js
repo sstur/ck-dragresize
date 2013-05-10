@@ -42,72 +42,24 @@
     var window = editor.window.$, document = editor.document.$, body = document.body;
     var snapToSize = (typeof IMAGE_SNAP_TO_SIZE == 'undefined') ? null : IMAGE_SNAP_TO_SIZE;
 
-    function DragEvent() {
-      this.events = {
-        mousemove: bind(this.mousemove, this),
-        keydown: bind(this.keydown, this),
-        mouseup: bind(this.mouseup, this)
-      };
+    function DragDetails(e) {
+      this.target = e.target;
+      this.attr = e.target.className;
+      this.startPos = {x: e.clientX, y: e.clientY};
+      this.update(e);
     }
 
-    DragEvent.prototype = {
-      start: function(e) {
-        if (e.button !== 0) {
-          //right-click or middle-click
-          return;
-        }
-        e.preventDefault();
-        e.stopPropagation();
-        this.target = e.target;
-        this.attr = e.target.className;
-        this.startPos = {x: e.clientX, y: e.clientY};
-        this.update(e);
-        var events = this.events;
-        document.addEventListener('mousemove', events.mousemove, false);
-        document.addEventListener('keydown', events.keydown, false);
-        document.addEventListener('mouseup', events.mouseup, false);
-        body.className += ' dragging-' + this.attr;
-        this.onStart && this.onStart();
-      },
+    DragDetails.prototype = {
       update: function(e) {
         this.currentPos = {x: e.clientX, y: e.clientY};
         this.delta = {x: e.clientX - this.startPos.x, y: e.clientY - this.startPos.y};
         this.keys = {shift: e.shiftKey, ctrl: e.ctrlKey, alt: e.altKey};
-      },
-      mousemove: function(e) {
-        this.update(e);
-        this.onDrag && this.onDrag();
-        if (e.which === 0) {
-          //mouse button released outside window; mouseup wasn't fired (Chrome)
-          this.mouseup(e);
-        }
-      },
-      keydown: function(e) {
-        //escape key cancels dragging
-        if (e.keyCode == 27) {
-          this.release();
-        }
-      },
-      mouseup: function(e) {
-        this.update(e);
-        this.release();
-        this.onComplete && this.onComplete();
-      },
-      release: function() {
-        body.className = body.className.replace('dragging-' + this.attr, '');
-        var events = this.events;
-        document.removeEventListener('mousemove', events.mousemove, false);
-        document.removeEventListener('keydown', events.keydown, false);
-        document.removeEventListener('mouseup', events.mouseup, false);
-        this.onRelease && this.onRelease();
       }
     };
 
+
     function Resizer(element) {
       this.el = element;
-      this.events = {
-        initDrag: bind(this.initDrag, this)
-      };
       this.init();
       this.show();
     }
@@ -164,37 +116,49 @@
           this.container.parentNode.removeChild(this.container);
         }
       },
-      initDrag: function(e) {
+      makeDraggable: function(el) {
         var resizer = this;
-        var drag = new DragEvent();
-        drag.onStart = function() {
-          resizer.showPreview();
-          resizer.isDragging = true;
-          editor.getSelection().lock();
+        el.setAttribute('draggable', 'true');
+        var details;
+        var events = {
+          dragstart: function(e) {
+            var el = e.target;
+            details = new DragDetails(e);
+            console.log(details);
+            body.className += ' dragging-' + details.attr;
+            //document.addEventListener('keydown', events.keydown, false);
+            resizer.showPreview();
+            editor.getSelection().lock();
+          },
+          //keydown: function() {
+          //  //escape key cancels dragging
+          //  if (e.keyCode == 27) {
+          //    events.dragend();
+          //  }
+          //},
+          drag: function(e) {
+            console.log(details);
+            details.update(e);
+            resizer.calculateSize(details);
+            resizer.updatePreview();
+            var box = resizer.previewBox;
+            resizer.updateHandles(box, box.left, box.top);
+          },
+          dragend: function() {
+            body.className = body.className.replace('dragging-' + details.attr, '');
+            //document.removeEventListener('keydown', events.keydown, false);
+            resizer.hidePreview();
+            resizer.hide();
+            editor.getSelection().unlock();
+            // Save an undo snapshot before the image is permanently changed
+            editor.fire('saveSnapshot');
+            resizer.resizeComplete();
+            // Save another snapshot after the image is changed
+            editor.fire('saveSnapshot');
+          }
         };
-        drag.onDrag = function() {
-          resizer.calculateSize(this);
-          resizer.updatePreview();
-          var box = resizer.previewBox;
-          resizer.updateHandles(box, box.left, box.top);
-        };
-        drag.onRelease = function() {
-          resizer.isDragging = false;
-          resizer.hidePreview();
-          resizer.hide();
-
-          editor.getSelection().unlock();
-
-          // Save an undo snapshot before the image is permanently changed
-          editor.fire('saveSnapshot');
-        };
-        drag.onComplete = function() {
-          resizer.resizeComplete();
-
-          // Save another snapshot after the image is changed
-          editor.fire('saveSnapshot');
-        };
-        drag.start(e);
+        addEvents(el, events);
+        return events;
       },
       updateHandles: function(box, left, top) {
         left = left || 0;
@@ -214,14 +178,14 @@
         this.updateHandles(this.box);
         for (var n in handles) {
           handles[n].style.display = 'block';
-          handles[n].addEventListener('mousedown', this.events.initDrag, false);
+          this.dragEvents = this.makeDraggable(handles[n]);
         }
         this.el.className += ' cke-resize';
       },
       hideHandles: function() {
         var handles = this.handles;
         for (var n in handles) {
-          handles[n].removeEventListener('mousedown', this.events.initDrag, false);
+          removeEvents(handles[n], this.dragEvents);
           handles[n].style.display = 'none';
         }
         this.el.className = this.el.className.replace(' cke-resize', '');
@@ -355,6 +319,18 @@
     return function() {
       fn.apply(ctx, arguments);
     };
+  }
+
+  function addEvents(el, events) {
+    for (var n in events) {
+      el.addEventListener(n, events[n], false);
+    }
+  }
+
+  function removeEvents(el, events) {
+    for (var n in events) {
+      el.removeEventListener(n, events[n], false);
+    }
   }
 
   function positionElement(el, left, top) {
