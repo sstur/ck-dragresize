@@ -85,6 +85,10 @@
         forEach(handles, function(n, handle) {
           container.appendChild(handle);
         });
+        //create a transparent image for drag icon
+        var img = document.createElement('img');
+        img.setAttribute('src', 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==');
+        this.dragIcon = img;
       },
       createSpan: function(className) {
         var el = document.createElement('span');
@@ -115,6 +119,7 @@
         var details;
         var events = {
           dragstart: function(e) {
+            e.dataTransfer.setDragImage(resizer.dragIcon, 0, 0);
             details = new DragDetails(e);
             addClass(body, 'dragging-' + details.attr);
             resizer.showPreview();
