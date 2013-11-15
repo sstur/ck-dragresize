@@ -224,7 +224,11 @@
           handles[n].removeEventListener('mousedown', this.events.initDrag, false);
           handles[n].style.display = 'none';
         }
-        this.el.className = this.el.className.replace(' cke-resize', '');
+        // Hide class cke-resize for all elements
+        var elements = document.getElementsByClassName('cke-resize');
+        for (var i = 0; i < elements.length; ++i) {
+            elements[i].className = elements[i].className.replace(new RegExp(' cke-resize', 'g'), '');
+        }
       },
       showPreview: function() {
         this.preview.style.backgroundImage = 'url("' + this.el.src + '")';
