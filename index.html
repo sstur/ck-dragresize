@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sample Editor</title>
+  <script src="ckeditor.js"></script>
+</head>
+<body>
+<form>
+  <script type="text/html" id="content">
+    <p><img src="http://placehold.it/200x150">
+      This content will be replaced with the editor.</p>
+  </script>
+  <script>
+    var script = document.getElementById('content');
+    var textarea = document.createElement('textarea');
+    textarea.value = script.innerHTML;
+    script.parentNode.insertBefore(textarea, script);
+    script.parentNode.removeChild(script);
+    CKEDITOR.replace(textarea, {
+      autoUpdateElement: false,
+      customConfig: false,
+      //skin: 'helium',
+      removePlugins: 'contextmenu',
+      disableNativeSpellChecker: false,
+      dialog_magnetDistance: 0,
+      dialog_backgroundCoverColor: 'black',
+      dialog_backgroundCoverOpacity: .5,
+      toolbar: [
+        ['Bold', 'Italic', 'Underline', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', 'Blockquote', 'HorizontalRule', 'RemoveFormat', '-', 'Link', 'Unlink', '-', 'Image'],
+        '/',
+        ['Undo', 'Redo', '-', 'Format', 'Font', 'FontSize', '-', 'TextColor', 'BGColor', '-', 'PasteText', 'PasteFromWord', 'SpecialChar', '-', 'Source']
+      ]
+    });
+  </script>
+</form>
+</body>
+</html>
