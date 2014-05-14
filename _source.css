@@ -25,6 +25,7 @@ img.cke-resize {
   position: absolute;
   top: 0;
   left: 0;
+  display: block;
   width: 0;
   height: 0;
   background-size: 100% 100%;
@@ -32,35 +33,36 @@ img.cke-resize {
   outline: 1px dashed #000;
 }
 
-#ckimgrsz span {
+#ckimgrsz i {
   position: absolute;
+  display: block;
   width: 5px;
   height: 5px;
   background: #fff;
   border: 1px solid #000;
 }
 
-#ckimgrsz span:hover, #ckimgrsz span.active {
+#ckimgrsz i:hover, #ckimgrsz i.active {
   background: #000;
 }
 
-#ckimgrsz span.tl,
-#ckimgrsz span.br {
+#ckimgrsz i.tl,
+#ckimgrsz i.br {
   cursor: nwse-resize;
 }
 
-#ckimgrsz span.tm,
-#ckimgrsz span.bm {
+#ckimgrsz i.tm,
+#ckimgrsz i.bm {
   cursor: ns-resize;
 }
 
-#ckimgrsz span.tr,
-#ckimgrsz span.bl {
+#ckimgrsz i.tr,
+#ckimgrsz i.bl {
   cursor: nesw-resize;
 }
 
-#ckimgrsz span.lm,
-#ckimgrsz span.rm {
+#ckimgrsz i.lm,
+#ckimgrsz i.rm {
   cursor: ew-resize;
 }
 

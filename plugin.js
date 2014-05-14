@@ -22,9 +22,8 @@
       if (!isWebkit) {
         return;
       }
-
       // CSS is added in a compressed form
-      CKEDITOR.addCss('img::selection{color:rgba(0,0,0,0)}img.cke-resize{outline:1px dashed #000}#ckimgrsz{position:absolute;width:0;height:0;cursor:default;z-index:10001}#ckimgrsz .preview{position:absolute;top:0;left:0;width:0;height:0;background-size:100% 100%;opacity:.65;outline:1px dashed #000}#ckimgrsz span{position:absolute;width:5px;height:5px;background:#fff;border:1px solid #000}#ckimgrsz span:hover,#ckimgrsz span.active{background:#000}#ckimgrsz span.tl,#ckimgrsz span.br{cursor:nwse-resize}#ckimgrsz span.tm,#ckimgrsz span.bm{cursor:ns-resize}#ckimgrsz span.tr,#ckimgrsz span.bl{cursor:nesw-resize}#ckimgrsz span.lm,#ckimgrsz span.rm{cursor:ew-resize}body.dragging-tl,body.dragging-tl *,body.dragging-br,body.dragging-br *{cursor:nwse-resize!important}body.dragging-tm,body.dragging-tm *,body.dragging-bm,body.dragging-bm *{cursor:ns-resize!important}body.dragging-tr,body.dragging-tr *,body.dragging-bl,body.dragging-bl *{cursor:nesw-resize!important}body.dragging-lm,body.dragging-lm *,body.dragging-rm,body.dragging-rm *{cursor:ew-resize!important}');
+      CKEDITOR.addCss('img::selection{color:rgba(0,0,0,0)}img.cke-resize{outline:1px dashed #000}#ckimgrsz{position:absolute;width:0;height:0;cursor:default;z-index:10001}#ckimgrsz .preview{position:absolute;top:0;left:0;display:block;width:0;height:0;background-size:100% 100%;opacity:.65;outline:1px dashed #000}#ckimgrsz i{position:absolute;display:block;width:5px;height:5px;background:#fff;border:1px solid #000}#ckimgrsz i.active,#ckimgrsz i:hover{background:#000}#ckimgrsz i.br,#ckimgrsz i.tl{cursor:nwse-resize}#ckimgrsz i.bm,#ckimgrsz i.tm{cursor:ns-resize}#ckimgrsz i.bl,#ckimgrsz i.tr{cursor:nesw-resize}#ckimgrsz i.lm,#ckimgrsz i.rm{cursor:ew-resize}body.dragging-br,body.dragging-br *,body.dragging-tl,body.dragging-tl *{cursor:nwse-resize!important}body.dragging-bm,body.dragging-bm *,body.dragging-tm,body.dragging-tm *{cursor:ns-resize!important}body.dragging-bl,body.dragging-bl *,body.dragging-tr,body.dragging-tr *{cursor:nesw-resize!important}body.dragging-lm,body.dragging-lm *,body.dragging-rm,body.dragging-rm *{cursor:ew-resize!important}');
     },
     init: function(editor) {
       if (!isWebkit) {
@@ -125,25 +124,25 @@
         }
         var container = this.container = document.createElement('div');
         container.id = 'ckimgrsz';
-        var preview = this.preview = document.createElement('div');
+        var preview = this.preview = document.createElement('span');
         preview.classList.add('preview');
         container.appendChild(preview);
         var handles = this.handles = {
-          tl: this.createSpan('tl'),
-          tm: this.createSpan('tm'),
-          tr: this.createSpan('tr'),
-          lm: this.createSpan('lm'),
-          rm: this.createSpan('rm'),
-          bl: this.createSpan('bl'),
-          bm: this.createSpan('bm'),
-          br: this.createSpan('br')
+          tl: this.createHandle('tl'),
+          tm: this.createHandle('tm'),
+          tr: this.createHandle('tr'),
+          lm: this.createHandle('lm'),
+          rm: this.createHandle('rm'),
+          bl: this.createHandle('bl'),
+          bm: this.createHandle('bm'),
+          br: this.createHandle('br')
         };
         for (var n in handles) {
           container.appendChild(handles[n]);
         }
       },
-      createSpan: function(name) {
-        var el = document.createElement('span');
+      createHandle: function(name) {
+        var el = document.createElement('i');
         el.classList.add(name);
         return el;
       },
@@ -312,6 +311,11 @@
     }
 
     editor.on('selectionChange', selectionChange);
+
+    editor.on('getData', function(e) {
+      var html = e.data.dataValue || '';
+      e.data.dataValue = html.replace(/<div id="ckimgrsz"([\s\S]*?)<\/div>/i, '');
+    });
 
     editor.on('beforeUndoImage', function() {
       // Remove the handles before undo images are saved
