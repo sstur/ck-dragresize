@@ -299,6 +299,7 @@
 
     function selectionChange() {
       var selection = editor.getSelection();
+      if (!selection) return;
       // If an element is selected and that element is an IMG
       if (selection.getType() != CKEDITOR.SELECTION_NONE && selection.getStartElement().is('img')) {
         // And we're not right or middle clicking on the image
