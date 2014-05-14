@@ -10,16 +10,16 @@
   "use strict";
 
   var PLUGIN_NAME = 'dragresize';
-
   var IMAGE_SNAP_TO_SIZE = 7;
+
+  var isWebkit = ('WebkitAppearance' in document.documentElement.style);
 
   /**
    * Initializes the plugin
    */
   CKEDITOR.plugins.add(PLUGIN_NAME, {
     onLoad: function() {
-      // This plugin only applies to Webkit and Opera
-      if (!CKEDITOR.env.webkit && !CKEDITOR.env.opera) {
+      if (!isWebkit) {
         return;
       }
 
@@ -27,8 +27,7 @@
       CKEDITOR.addCss('img::selection{color:rgba(0,0,0,0)}img.cke-resize{outline:1px dashed #000}#ckimgrsz{position:absolute;width:0;height:0;cursor:default;z-index:10001}#ckimgrsz .preview{position:absolute;top:0;left:0;width:0;height:0;background-size:100% 100%;opacity:.65;outline:1px dashed #000}#ckimgrsz span{position:absolute;width:5px;height:5px;background:#fff;border:1px solid #000}#ckimgrsz span:hover,#ckimgrsz span.active{background:#000}#ckimgrsz span.tl,#ckimgrsz span.br{cursor:nwse-resize}#ckimgrsz span.tm,#ckimgrsz span.bm{cursor:ns-resize}#ckimgrsz span.tr,#ckimgrsz span.bl{cursor:nesw-resize}#ckimgrsz span.lm,#ckimgrsz span.rm{cursor:ew-resize}body.dragging-tl,body.dragging-tl *,body.dragging-br,body.dragging-br *{cursor:nwse-resize!important}body.dragging-tm,body.dragging-tm *,body.dragging-bm,body.dragging-bm *{cursor:ns-resize!important}body.dragging-tr,body.dragging-tr *,body.dragging-bl,body.dragging-bl *{cursor:nesw-resize!important}body.dragging-lm,body.dragging-lm *,body.dragging-rm,body.dragging-rm *{cursor:ew-resize!important}');
     },
     init: function(editor) {
-      // This plugin only applies to Webkit and Opera
-      if (!CKEDITOR.env.webkit && !CKEDITOR.env.opera) {
+      if (!isWebkit) {
         return;
       }
       //onDomReady handler
@@ -66,7 +65,7 @@
         document.addEventListener('mousemove', events.mousemove, false);
         document.addEventListener('keydown', events.keydown, false);
         document.addEventListener('mouseup', events.mouseup, false);
-        body.className += ' dragging-' + this.attr;
+        body.classList.add('dragging-' + this.attr);
         this.onStart && this.onStart();
       },
       update: function(e) {
@@ -94,7 +93,7 @@
         this.onComplete && this.onComplete();
       },
       release: function() {
-        body.className = body.className.replace('dragging-' + this.attr, '');
+        body.classList.remove('dragging-' + this.attr);
         var events = this.events;
         document.removeEventListener('mousemove', events.mousemove, false);
         document.removeEventListener('keydown', events.keydown, false);
@@ -127,7 +126,7 @@
         var container = this.container = document.createElement('div');
         container.id = 'ckimgrsz';
         var preview = this.preview = document.createElement('div');
-        preview.className = 'preview';
+        preview.classList.add('preview');
         container.appendChild(preview);
         var handles = this.handles = {
           tl: this.createSpan('tl'),
@@ -143,9 +142,9 @@
           container.appendChild(handles[n]);
         }
       },
-      createSpan: function(className) {
+      createSpan: function(name) {
         var el = document.createElement('span');
-        el.className = className;
+        el.classList.add(name);
         return el;
       },
       show: function() {
@@ -216,7 +215,7 @@
           handles[n].style.display = 'block';
           handles[n].addEventListener('mousedown', this.events.initDrag, false);
         }
-        this.el.className += ' cke-resize';
+        this.el.classList.add('cke-resize');
       },
       hideHandles: function() {
         var handles = this.handles;
@@ -227,7 +226,7 @@
         // Hide class cke-resize for all elements
         var elements = document.getElementsByClassName('cke-resize');
         for (var i = 0; i < elements.length; ++i) {
-            elements[i].className = elements[i].className.replace(new RegExp(' cke-resize', 'g'), '');
+            elements[i].classList.remove('cke-resize');
         }
       },
       showPreview: function() {
