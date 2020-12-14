@@ -374,6 +374,11 @@
   function resizeElement(el, width, height) {
     el.style.width = String(width) + 'px';
     el.style.height = String(height) + 'px';
+    // it would be better use width, height attribute for img element
+    if (el.tagName === 'IMG') {
+      el.setAttribute('width', width);
+      el.setAttribute('height', height);
+    }
   }
 
   function getBoundingBox(window, el) {
