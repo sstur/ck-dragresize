@@ -11,10 +11,12 @@
   "version": "0.5.1",
   "homepage": "https://github.com/sstur/ck-dragresize",
   "bugs": "https://github.com/sstur/ck-dragresize/issues",
-  "licenses": [{
-    "type": "MIT",
-    "url": "https://raw.github.com/sstur/ck-dragresize/master/LICENSE"
-  }],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://raw.github.com/sstur/ck-dragresize/master/LICENSE"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/sstur/ck-dragresize.git"
