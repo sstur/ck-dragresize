@@ -51,12 +51,28 @@
     function selectionChange() {
       var selection = editor.getSelection();
       if (!selection) return;
-      // If an element is selected and that element is an IMG
-      if (selection.getType() !== CKEDITOR.SELECTION_NONE && selection.getStartElement().is('img')) {
-        // And we're not right or middle clicking on the image
-        if (!window.event || !window.event.button || window.event.button === 0) {
-          resizer.show(selection.getStartElement().$);
-        }
+
+      // Get selected element
+      var startEl = selection.getStartElement();
+      var image = null;
+
+      // Hide resizer when there is no startEl or when the selection is done by right or middle clicking on the image
+      if (!startEl || selection.getType() === CKEDITOR.SELECTION_NONE || (window.event && window.event.button && window.event.button !== 0)) {
+        return resizer.hide();
+      }
+
+      // Widget with an dragresize attribute = "true" => search for image and handle it like a normal image
+      if (startEl && startEl.hasClass('cke_widget_wrapper') && startEl.getAttribute('dragresize') === 'true') {
+        image = startEl.$.querySelector('img');
+      }
+
+      // Check if the image is of tag image
+      if (startEl.is('img')) {
+        image = selection.getStartElement().$;
+      }
+
+      if (image) {
+        resizer.show(image);
       } else {
         resizer.hide();
       }
