@@ -48,17 +48,38 @@
       }
     }, false);
 
-    function selectionChange() {
+      function selectionChange() {
       var selection = editor.getSelection();
       if (!selection) return;
       // If an element is selected and that element is an IMG
-      if (selection.getType() !== CKEDITOR.SELECTION_NONE && selection.getStartElement().is('img')) {
+      if (selection.getType() !== CKEDITOR.SELECTION_NONE && selection.getStartElement().is('img')  ) {
         // And we're not right or middle clicking on the image
         if (!window.event || !window.event.button || window.event.button === 0) {
           resizer.show(selection.getStartElement().$);
         }
       } else {
-        resizer.hide();
+      	if (selection.getType() !== CKEDITOR.SELECTION_NONE) {
+	      	var getElement=selection.getStartElement();
+  	    	while (getElement.$.nodeName!=='BODY') {
+    	  		if  (getElement.is('div') ) {
+      				break;
+	      		}
+  	    		try {
+  	    			getElement=getElement.getParent();
+  	    		} catch(e) {
+  	    			console.log(e);
+  	    			break;	
+  	    		}
+  	    		
+    	  	}
+	      	if (getElement.is('div')) {
+  	    		 if (!window.event || !window.event.button || window.event.button === 0) {
+    	     		 resizer.show(getElement.$);
+      	  		}
+	      	} else {
+  	      	resizer.hide();
+    	    }
+    	  }
       }
     }
 
@@ -224,7 +245,9 @@
       }
     },
     showPreview: function() {
-      this.preview.style.backgroundImage = 'url("' + this.el.src + '")';
+      if (this.el.nodeName =='IMG') {
+      	this.preview.style.backgroundImage = 'url("' + this.el.src + '")';
+      }
       this.calculateSize();
       this.updatePreview();
       this.preview.style.display = 'block';
